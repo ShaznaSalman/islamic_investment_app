@@ -1,6 +1,7 @@
 import prisma from '@/lib/prisma';
 import { NotificationType } from '@prisma/client';
 import { sendOverdueAlertEmail, sendRepaymentReminderEmail } from '@/lib/email';
+import { getNotificationPreferences } from './settings';
 
 async function hasRecentNotification(
   userId: string,
@@ -54,9 +55,15 @@ export async function runNotificationAutomation() {
       const title = 'Repayment Due Soon';
       const message = `Repayment for "${inv.title}" is due on ${dueLabel}. Outstanding: ${amountLabel}.`;
 
-      if (!(await hasRecentNotification(inv.recipientId, inv.id, 'REPAYMENT_DUE', 6))) {
+      const recipientPrefs = await getNotificationPreferences(inv.recipientId);
+      const recipientRecentlyNotified = await hasRecentNotification(inv.recipientId, inv.id, 'REPAYMENT_DUE', 6);
+
+      if (!recipientRecentlyNotified) {
         await notifyUser(inv.recipientId, inv.id, 'REPAYMENT_DUE', title, message);
-        dueReminders++;
+        if (recipientPrefs.inAppDueReminders) dueReminders++;
+      }
+
+      if (recipientPrefs.emailReminders && !recipientRecentlyNotified) {
         try {
           await sendRepaymentReminderEmail(inv.recipient.email, inv.recipient.name, inv.title, dueLabel, amountLabel);
         } catch (e) {
@@ -64,8 +71,11 @@ export async function runNotificationAutomation() {
         }
       }
 
-      if (owner && !(await hasRecentNotification(owner.id, inv.id, 'REPAYMENT_DUE', 6))) {
-        await notifyUser(owner.id, inv.id, 'REPAYMENT_DUE', title, message);
+      if (owner) {
+        const ownerRecentlyNotified = await hasRecentNotification(owner.id, inv.id, 'REPAYMENT_DUE', 6);
+        if (!ownerRecentlyNotified) {
+          await notifyUser(owner.id, inv.id, 'REPAYMENT_DUE', title, message);
+        }
       }
     }
 
@@ -74,17 +84,26 @@ export async function runNotificationAutomation() {
       const title = 'Payment Overdue';
       const message = `Repayment for "${inv.title}" was due on ${dueLabel}. Outstanding: ${amountLabel}.`;
 
-      if (!(await hasRecentNotification(inv.recipientId, inv.id, 'PAYMENT_OVERDUE', 1))) {
+      const recipientPrefs = await getNotificationPreferences(inv.recipientId);
+      const ownerPrefs = owner ? await getNotificationPreferences(owner.id) : null;
+      const recipientRecentlyNotified = await hasRecentNotification(inv.recipientId, inv.id, 'PAYMENT_OVERDUE', 1);
+
+      if (!recipientRecentlyNotified) {
         await notifyUser(inv.recipientId, inv.id, 'PAYMENT_OVERDUE', title, message);
-        overdueAlerts++;
+        if (recipientPrefs.inAppOverdueAlerts) overdueAlerts++;
       }
 
-      if (owner && !(await hasRecentNotification(owner.id, inv.id, 'PAYMENT_OVERDUE', 1))) {
-        await notifyUser(owner.id, inv.id, 'PAYMENT_OVERDUE', title, message);
-        try {
-          await sendOverdueAlertEmail(owner.email, owner.name, inv.title, inv.recipient.name, dueLabel, amountLabel);
-        } catch (e) {
-          console.error('Overdue alert email failed:', e);
+      if (owner) {
+        const ownerRecentlyNotified = await hasRecentNotification(owner.id, inv.id, 'PAYMENT_OVERDUE', 1);
+        if (!ownerRecentlyNotified) {
+          await notifyUser(owner.id, inv.id, 'PAYMENT_OVERDUE', title, message);
+          if (ownerPrefs?.emailReminders) {
+            try {
+              await sendOverdueAlertEmail(owner.email, owner.name, inv.title, inv.recipient.name, dueLabel, amountLabel);
+            } catch (e) {
+              console.error('Overdue alert email failed:', e);
+            }
+          }
         }
       }
 

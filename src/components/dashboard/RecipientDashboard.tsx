@@ -5,7 +5,7 @@ import Header from '@/components/layout/Header';
 import { useAuth } from '@/hooks/useAuth';
 import { useDashboardStats } from '@/hooks/useInvestments';
 import CurrencyAmount from '@/components/ui/CurrencyAmount';
-import { formatAmountDual, formatDate, investmentStatusLabels, isOverdue } from '@/lib/utils';
+import { formatDate, investmentStatusLabels, isOverdue } from '@/lib/utils';
 import { Investment } from '@/types';
 import {
   Wallet, TrendingUp, Clock, AlertCircle, ArrowRight, FileText,
@@ -57,9 +57,9 @@ export default function RecipientDashboard() {
             ))
           ) : (
             <>
-              <Kpi label="Total Assigned" value={formatAmountDual(stats?.totalInvested ?? 0)} icon={<Wallet size={16} />} />
-              <Kpi label="Total Repaid" value={formatAmountDual(stats?.totalRepaid ?? 0)} icon={<TrendingUp size={16} />} />
-              <Kpi label="Outstanding" value={formatAmountDual(stats?.outstanding ?? 0)} icon={<Clock size={16} />} />
+              <Kpi label="Total Assigned" value={<CurrencyAmount amount={stats?.totalInvested ?? 0} />} icon={<Wallet size={16} />} />
+              <Kpi label="Total Repaid" value={<CurrencyAmount amount={stats?.totalRepaid ?? 0} />} icon={<TrendingUp size={16} />} />
+              <Kpi label="Outstanding" value={<CurrencyAmount amount={stats?.outstanding ?? 0} />} icon={<Clock size={16} />} />
               <Kpi
                 label="Overdue"
                 value={String(stats?.overdueCount ?? 0)}
@@ -164,7 +164,7 @@ export default function RecipientDashboard() {
   );
 }
 
-function Kpi({ label, value, icon, warn }: { label: string; value: string; icon: React.ReactNode; warn?: boolean }) {
+function Kpi({ label, value, icon, warn }: { label: string; value: React.ReactNode; icon: React.ReactNode; warn?: boolean }) {
   return (
     <div className={`rounded-2xl p-5 text-white bg-gradient-to-br ${warn ? 'from-red-600 to-red-400' : 'from-primary-800 to-primary-600'}`}>
       <div className="w-8 h-8 bg-white/20 rounded-xl flex items-center justify-center mb-3">{icon}</div>

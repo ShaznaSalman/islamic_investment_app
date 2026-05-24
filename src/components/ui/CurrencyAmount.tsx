@@ -1,6 +1,7 @@
 'use client';
 
-import { formatOMR, formatUSD, getUsdRate } from '@/lib/utils';
+import { useSystemSettings } from '@/hooks/useSettings';
+import { formatOMR, formatUSD } from '@/lib/utils';
 
 export default function CurrencyAmount({
   amount,
@@ -11,15 +12,21 @@ export default function CurrencyAmount({
   className?: string;
   showUsd?: boolean;
 }) {
+  const { data: settings } = useSystemSettings();
   const num = typeof amount === 'string' ? parseFloat(amount) : amount;
-  if (!showUsd) {
+
+  if (!showUsd || settings?.showUsdEquivalent === false) {
     return <span className={className}>{formatOMR(num)}</span>;
   }
-  const rate = getUsdRate();
+
+  const rate = settings?.omrToUsdRate ?? 2.6;
+
   return (
     <span className={className}>
       {formatOMR(num)}
-      <span className="text-gray-400 font-normal text-xs ml-1.5">≈ {formatUSD(num * rate)}</span>
+      <span className="ml-1.5 text-xs font-normal text-gray-400">
+        approx. {formatUSD(num * rate)}
+      </span>
     </span>
   );
 }

@@ -5,7 +5,7 @@ import { useAuth } from '@/hooks/useAuth';
 import RecipientDashboard from '@/components/dashboard/RecipientDashboard';
 import Header from '@/components/layout/Header';
 import CurrencyAmount from '@/components/ui/CurrencyAmount';
-import { formatAmountDual, formatDate, investmentStatusLabels } from '@/lib/utils';
+import { formatDate, investmentStatusLabels } from '@/lib/utils';
 import {
   TrendingUp, Users, CheckCircle, Clock,
   Wallet, ArrowRight, Plus, FileText, BarChart2, AlertCircle,
@@ -105,9 +105,13 @@ export default function DashboardPage() {
               </p>
               <h1 className="mt-1.5 text-2xl font-bold leading-tight text-white sm:text-3xl">{user?.name}</h1>
               <p className="text-primary-300 text-sm mt-2">
-                {isLoading
-                  ? 'Loading portfolio…'
-                  : `${total} investment${total !== 1 ? 's' : ''} · ${formatAmountDual(stats?.totalInvested || 0)} total portfolio`}
+                {isLoading ? (
+                  'Loading portfolio...'
+                ) : (
+                  <>
+                    {total} investment{total !== 1 ? 's' : ''} &middot; <CurrencyAmount amount={stats?.totalInvested || 0} /> total portfolio
+                  </>
+                )}
               </p>
             </div>
             <Link
@@ -130,14 +134,14 @@ export default function DashboardPage() {
             <>
               <KpiCard
                 label="Total Invested"
-                value={formatAmountDual(stats?.totalInvested || 0)}
+                value={<CurrencyAmount amount={stats?.totalInvested || 0} />}
                 icon={<Wallet size={17} />}
                 gradient="from-primary-800 to-primary-600"
               />
               <KpiCard
                 label="Total Repaid"
-                value={formatAmountDual(stats?.totalRepaid || 0)}
-                sub={`+${formatAmountDual(stats?.totalProfitReceived || 0)} profit`}
+                value={<CurrencyAmount amount={stats?.totalRepaid || 0} />}
+                sub={<>+<CurrencyAmount amount={stats?.totalProfitReceived || 0} /> profit</>}
                 icon={<TrendingUp size={17} />}
                 gradient="from-blue-700 to-blue-500"
               />
@@ -347,7 +351,7 @@ export default function DashboardPage() {
 function KpiCard({
   label, value, sub, icon, gradient,
 }: {
-  label: string; value: string; sub?: string; icon: React.ReactNode; gradient: string;
+  label: string; value: React.ReactNode; sub?: React.ReactNode; icon: React.ReactNode; gradient: string;
 }) {
   return (
     <div className={`relative overflow-hidden rounded-2xl bg-gradient-to-br ${gradient} p-5 text-white`}>

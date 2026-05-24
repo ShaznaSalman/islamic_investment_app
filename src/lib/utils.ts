@@ -24,21 +24,12 @@ export function formatUSD(amount: number | string): string {
 
 /** USD exchange rate (OMR → USD) */
 export function getUsdRate(): number {
-  if (typeof window !== 'undefined') {
-    const stored = localStorage.getItem('iia_usd_rate');
-    if (stored) {
-      const n = parseFloat(stored);
-      if (!isNaN(n) && n > 0) return n;
-    }
-  }
   const env = process.env.NEXT_PUBLIC_USD_EXCHANGE_RATE;
   return env ? parseFloat(env) || 2.6 : 2.6;
 }
 
 export function setUsdRate(rate: number) {
-  if (typeof window !== 'undefined') {
-    localStorage.setItem('iia_usd_rate', String(rate));
-  }
+  return rate;
 }
 
 /** OMR with optional USD equivalent */

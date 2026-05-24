@@ -1,8 +1,18 @@
 import prisma from '@/lib/prisma';
 import { ApiError, AuthUser } from './auth';
+import { getNotificationPreferences } from './settings';
 
 export async function getNotifications(user: AuthUser, unreadOnly: boolean) {
+  const prefs = await getNotificationPreferences(user.id);
+  const disabledTypes = [
+    !prefs.inAppDueReminders ? 'REPAYMENT_DUE' : null,
+    !prefs.inAppOverdueAlerts ? 'PAYMENT_OVERDUE' : null,
+    !prefs.inAppAssignments ? 'NEW_INVESTMENT' : null,
+    !prefs.inAppCompletions ? 'INVESTMENT_COMPLETED' : null,
+  ].filter(Boolean);
+
   const where: Record<string, unknown> = { userId: user.id };
+  if (disabledTypes.length > 0) where.type = { notIn: disabledTypes };
   if (unreadOnly) where.isRead = false;
 
   const [notifications, unreadCount] = await Promise.all([

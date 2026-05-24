@@ -7,6 +7,7 @@ import { Card, CardHeader, CardBody } from '@/components/ui/Card';
 import Input from '@/components/ui/Input';
 import Button from '@/components/ui/Button';
 import { formatOMR } from '@/lib/utils';
+import CurrencyAmount from '@/components/ui/CurrencyAmount';
 
 // ── Profit Share Calculator ────────────────────────────────────────────────────
 function ProfitShareCalc() {
@@ -70,11 +71,11 @@ function ProfitShareCalc() {
           <div className="mt-4 grid gap-4 sm:grid-cols-2">
             <div className="bg-primary-50 border border-primary-200 rounded-xl p-4 text-center">
               <p className="text-xs text-primary-600 font-medium">Owner Receives</p>
-              <p className="text-2xl font-bold text-primary-800 mt-1">{formatOMR(result.ownerShare)}</p>
+              <p className="text-2xl font-bold text-primary-800 mt-1"><CurrencyAmount amount={result.ownerShare} /></p>
             </div>
             <div className="bg-gold-50 border border-gold-200 rounded-xl p-4 text-center">
               <p className="text-xs text-gold-700 font-medium">Recipient Keeps</p>
-              <p className="text-2xl font-bold text-gold-700 mt-1">{formatOMR(result.recipientShare)}</p>
+              <p className="text-2xl font-bold text-gold-700 mt-1"><CurrencyAmount amount={result.recipientShare} /></p>
             </div>
           </div>
         )}
@@ -114,15 +115,15 @@ function ProjectedReturnCalc() {
           <div className="grid gap-3 sm:grid-cols-3">
             <div className="bg-gray-50 border rounded-xl p-4 text-center">
               <p className="text-xs text-gray-500">Total Profit</p>
-              <p className="text-lg font-bold text-gray-900 mt-1">{formatOMR(result.totalProfit)}</p>
+              <p className="text-lg font-bold text-gray-900 mt-1"><CurrencyAmount amount={result.totalProfit} /></p>
             </div>
             <div className="bg-primary-50 border border-primary-200 rounded-xl p-4 text-center">
               <p className="text-xs text-primary-600">Owner Return</p>
-              <p className="text-lg font-bold text-primary-800 mt-1">{formatOMR(result.ownerReturn)}</p>
+              <p className="text-lg font-bold text-primary-800 mt-1"><CurrencyAmount amount={result.ownerReturn} /></p>
             </div>
             <div className="bg-green-50 border border-green-200 rounded-xl p-4 text-center">
               <p className="text-xs text-green-600">Total Received</p>
-              <p className="text-lg font-bold text-green-700 mt-1">{formatOMR(result.totalReturn)}</p>
+              <p className="text-lg font-bold text-green-700 mt-1"><CurrencyAmount amount={result.totalReturn} /></p>
             </div>
           </div>
         )}
@@ -161,12 +162,12 @@ function PurificationCalc() {
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-center">
               <p className="text-xs text-red-600 font-medium">Donate to Charity</p>
-              <p className="text-xl font-bold text-red-700 mt-1">{formatOMR(result.amountToPurify)}</p>
+              <p className="text-xl font-bold text-red-700 mt-1"><CurrencyAmount amount={result.amountToPurify} /></p>
               <p className="text-xs text-red-400 mt-1">Must be given away, not kept</p>
             </div>
             <div className="bg-green-50 border border-green-200 rounded-xl p-4 text-center">
               <p className="text-xs text-green-600 font-medium">Purified Income</p>
-              <p className="text-xl font-bold text-green-700 mt-1">{formatOMR(result.halalAmount)}</p>
+              <p className="text-xl font-bold text-green-700 mt-1"><CurrencyAmount amount={result.halalAmount} /></p>
               <p className="text-xs text-green-400 mt-1">Permissible to keep</p>
             </div>
           </div>
@@ -214,11 +215,11 @@ function InstallmentCalc() {
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="bg-primary-50 border border-primary-200 rounded-xl p-4 text-center">
                 <p className="text-xs text-primary-600">Sale Price (incl. markup)</p>
-                <p className="text-xl font-bold text-primary-800 mt-1">{formatOMR(result.salePrice)}</p>
+                <p className="text-xl font-bold text-primary-800 mt-1"><CurrencyAmount amount={result.salePrice} /></p>
               </div>
               <div className="bg-gold-50 border border-gold-200 rounded-xl p-4 text-center">
                 <p className="text-xs text-gold-700">Monthly Installment</p>
-                <p className="text-xl font-bold text-gold-700 mt-1">{formatOMR(result.installmentAmount)}</p>
+                <p className="text-xl font-bold text-gold-700 mt-1"><CurrencyAmount amount={result.installmentAmount} /></p>
               </div>
             </div>
             <div className="max-h-60 overflow-y-auto border border-gray-100 rounded-lg">

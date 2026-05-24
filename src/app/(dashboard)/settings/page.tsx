@@ -13,7 +13,14 @@ import toast from 'react-hot-toast';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { getUsdRate, setUsdRate, formatDate } from '@/lib/utils';
+import { formatDate } from '@/lib/utils';
+import {
+  defaultNotificationPreferences,
+  useNotificationPreferences,
+  useSystemSettings,
+  useUpdateNotificationPreferences,
+  useUpdateSystemSettings,
+} from '@/hooks/useSettings';
 import Image from 'next/image';
 
 const profileSchema = z.object({
@@ -50,22 +57,26 @@ export default function SettingsPage() {
   const [cronResult, setCronResult] = useState<string | null>(null);
   const [photoUploading, setPhotoUploading] = useState(false);
   const [usdRate, setUsdRateState] = useState('2.6');
+  const [showUsdEquivalent, setShowUsdEquivalent] = useState(true);
   const [passwordConfirmOpen, setPasswordConfirmOpen] = useState(false);
   const [passwordChanging, setPasswordChanging] = useState(false);
   const [pendingPasswordData, setPendingPasswordData] = useState<PasswordForm | null>(null);
-  const [notificationPrefs, setNotificationPrefs] = useState({
-    inAppDueReminders: true,
-    inAppOverdueAlerts: true,
-    inAppAssignments: true,
-    emailReminders: true,
-  });
+  const [notificationPrefs, setNotificationPrefs] = useState(defaultNotificationPreferences);
   const photoRef = useRef<HTMLInputElement>(null);
+  const { data: systemSettings } = useSystemSettings();
+  const { data: savedNotificationPrefs } = useNotificationPreferences();
+  const updateSystemSettings = useUpdateSystemSettings();
+  const updateNotificationPreferences = useUpdateNotificationPreferences();
 
   useEffect(() => {
-    setUsdRateState(String(getUsdRate()));
-    const stored = localStorage.getItem('iia_notification_preferences');
-    if (stored) setNotificationPrefs(JSON.parse(stored));
-  }, []);
+    if (!systemSettings) return;
+    setUsdRateState(String(systemSettings.omrToUsdRate));
+    setShowUsdEquivalent(systemSettings.showUsdEquivalent);
+  }, [systemSettings]);
+
+  useEffect(() => {
+    if (savedNotificationPrefs) setNotificationPrefs(savedNotificationPrefs);
+  }, [savedNotificationPrefs]);
 
   const {
     register: rProfile, handleSubmit: hsProfile,
@@ -118,14 +129,17 @@ export default function SettingsPage() {
     }
   }
 
-  function saveUsdRate() {
+  async function saveUsdRate() {
     const n = parseFloat(usdRate);
     if (isNaN(n) || n <= 0) {
       toast.error('Enter a valid exchange rate');
       return;
     }
-    setUsdRate(n);
-    toast.success('USD rate saved for this browser');
+    await updateSystemSettings.mutateAsync({
+      omrToUsdRate: n,
+      showUsdEquivalent,
+    });
+    toast.success('Currency settings saved');
   }
 
   function onPasswordSubmit(data: PasswordForm) {
@@ -167,8 +181,10 @@ export default function SettingsPage() {
   function updateNotificationPref(key: keyof typeof notificationPrefs, value: boolean) {
     const next = { ...notificationPrefs, [key]: value };
     setNotificationPrefs(next);
-    localStorage.setItem('iia_notification_preferences', JSON.stringify(next));
-    toast.success('Notification preference saved');
+    updateNotificationPreferences.mutate(next, {
+      onSuccess: () => toast.success('Notification preference saved'),
+      onError: () => toast.error('Could not save notification preference'),
+    });
   }
 
   type SectionId = 'profile' | 'password' | 'notifications' | 'system';
@@ -267,12 +283,13 @@ export default function SettingsPage() {
 
           {activeSection === 'notifications' && (
             <Card>
-              <CardHeader title="Notification Settings" subtitle="Choose which alerts should be surfaced for this browser" />
+              <CardHeader title="Notification Settings" subtitle="Choose which alerts should be surfaced for your account" />
               <CardBody className="space-y-3">
                 {[
                   ['inAppDueReminders', 'Repayment due reminders', 'Show reminders when a repayment is due within 7 days.'],
                   ['inAppOverdueAlerts', 'Overdue payment alerts', 'Show alerts when a repayment becomes overdue.'],
                   ['inAppAssignments', 'New investment assignments', 'Show notifications when an investment is assigned.'],
+                  ['inAppCompletions', 'Investment completion alerts', 'Show notifications when an investment is completed.'],
                   ['emailReminders', 'Email reminders', 'Allow email reminders where email is configured.'],
                 ].map(([key, label, description]) => (
                   <label key={key} className="flex items-start justify-between gap-4 rounded-lg border border-gray-100 p-3">
@@ -304,6 +321,18 @@ export default function SettingsPage() {
                     <span className="text-gray-600">Primary currency</span>
                     <span className="font-semibold text-primary-800">OMR — Omani Rial</span>
                   </div>
+                  <label className="flex items-center justify-between gap-4 rounded-lg border border-gray-100 p-3 text-sm">
+                    <span>
+                      <span className="block font-medium text-gray-900">Show USD equivalents</span>
+                      <span className="mt-0.5 block text-xs text-gray-500">Display approximate USD beside OMR amounts across the app.</span>
+                    </span>
+                    <input
+                      type="checkbox"
+                      checked={showUsdEquivalent}
+                      onChange={(e) => setShowUsdEquivalent(e.target.checked)}
+                      className="h-4 w-4 rounded border-gray-300 text-primary-700 focus:ring-primary-600"
+                    />
+                  </label>
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
                     <Input
                       label="OMR → USD rate"
@@ -314,7 +343,7 @@ export default function SettingsPage() {
                       onChange={(e) => setUsdRateState(e.target.value)}
                       hint="Used for ≈ USD amounts across the app (saved in this browser)"
                     />
-                    <Button type="button" onClick={saveUsdRate} className="w-full sm:w-auto">Save rate</Button>
+                    <Button type="button" onClick={saveUsdRate} loading={updateSystemSettings.isPending} className="w-full sm:w-auto">Save settings</Button>
                   </div>
                 </CardBody>
               </Card>
