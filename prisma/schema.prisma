@@ -1,0 +1,160 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum Role {
+  OWNER
+  RECIPIENT
+}
+
+enum InvestmentType {
+  MUDARABAH
+  MUSHARAKAH
+  QARD_HASSAN
+  MURABAHAH
+}
+
+enum InvestmentStatus {
+  PENDING
+  ACTIVE
+  COMPLETED
+  DEFAULTED
+}
+
+enum NotificationType {
+  REPAYMENT_DUE
+  PAYMENT_OVERDUE
+  NEW_INVESTMENT
+  INVESTMENT_COMPLETED
+  DOCUMENT_ADDED
+  GENERAL
+}
+
+model User {
+  id                String         @id @default(cuid())
+  email             String         @unique
+  password          String
+  name              String
+  role              Role           @default(RECIPIENT)
+  phone             String?
+  photoUrl          String?
+  isActive          Boolean        @default(true)
+  resetToken        String?
+  resetTokenExpiry  DateTime?
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+
+  investments       Investment[]   @relation("RecipientInvestments")
+  notifications     Notification[]
+
+  @@index([email])
+}
+
+model Investment {
+  id                    String           @id @default(cuid())
+  title                 String
+  recipientId           String
+  recipient             User             @relation("RecipientInvestments", fields: [recipientId], references: [id])
+  type                  InvestmentType
+  status                InvestmentStatus @default(PENDING)
+  principalAmount       Decimal          @db.Decimal(15, 3)
+  currencyCode          String           @default("OMR")
+  ownerProfitRatio      Decimal          @db.Decimal(5, 2)
+  recipientProfitRatio  Decimal          @db.Decimal(5, 2)
+  startDate             DateTime
+  endDate               DateTime?
+  purpose               String?
+  notes                 String?
+  shariaAdvisorNotes    String?
+  totalRepaid           Decimal          @db.Decimal(15, 3) @default(0)
+  totalProfitReceived   Decimal          @db.Decimal(15, 3) @default(0)
+  isFullyRepaid         Boolean          @default(false)
+  nextRepaymentDate     DateTime?
+  createdAt             DateTime         @default(now())
+  updatedAt             DateTime         @updatedAt
+
+  repayments            Repayment[]
+  documents             Document[]
+  notifications         Notification[]
+
+  @@index([recipientId])
+  @@index([status])
+}
+
+model Repayment {
+  id               String     @id @default(cuid())
+  investmentId     String
+  investment       Investment @relation(fields: [investmentId], references: [id], onDelete: Cascade)
+  amount           Decimal    @db.Decimal(15, 3)
+  principalPortion Decimal    @db.Decimal(15, 3) @default(0)
+  profitPortion    Decimal    @db.Decimal(15, 3) @default(0)
+  paymentDate      DateTime
+  notes            String?
+  receiptUrl       String?
+  createdAt        DateTime   @default(now())
+  updatedAt        DateTime   @updatedAt
+
+  @@index([investmentId])
+}
+
+model Document {
+  id              String     @id @default(cuid())
+  investmentId    String
+  investment      Investment @relation(fields: [investmentId], references: [id], onDelete: Cascade)
+  name            String
+  fileUrl         String
+  fileType        String
+  fileSizeBytes   Int
+  isAcknowledged  Boolean    @default(false)
+  acknowledgedAt  DateTime?
+  uploadedAt      DateTime   @default(now())
+
+  @@index([investmentId])
+}
+
+model Notification {
+  id           String           @id @default(cuid())
+  userId       String
+  user         User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  investmentId String?
+  investment   Investment?      @relation(fields: [investmentId], references: [id], onDelete: SetNull)
+  type         NotificationType
+  title        String
+  message      String
+  isRead       Boolean          @default(false)
+  createdAt    DateTime         @default(now())
+
+  @@index([userId])
+  @@index([isRead])
+}
+
+model PurificationRecord {
+  id           String   @id @default(cuid())
+  amount       Decimal  @db.Decimal(15, 3)
+  currencyCode String   @default("OMR")
+  donationDate DateTime
+  donatedTo    String?
+  purpose      String?
+  notes        String?
+  createdAt    DateTime @default(now())
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  action    String
+  entity    String
+  entityId  String?
+  details   Json?
+  ipAddress String?
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([entity, entityId])
+}

@@ -1,0 +1,13 @@
+# Root
+node_modules/
+.env
+.env.local
+.env.production.local
+dist/
+.next/
+*.log
+npm-debug.log*
+.DS_Store
+Thumbs.db
+public/uploads/
+*.sqlite
