@@ -11,6 +11,8 @@ import Modal from '@/components/ui/Modal';
 import Input from '@/components/ui/Input';
 import Select from '@/components/ui/Select';
 import Table from '@/components/ui/Table';
+import SearchInput from '@/components/ui/SearchInput';
+import ConfirmDialog from '@/components/ui/ConfirmDialog';
 import { User } from '@/types';
 import { formatDate } from '@/lib/utils';
 import { useForm } from 'react-hook-form';
@@ -23,7 +25,7 @@ const schema = z.object({
   name: z.string().min(2),
   email: z.string().email(),
   password: z.string().min(8),
-  role: z.enum(['OWNER', 'RECIPIENT']),
+  role: z.literal('RECIPIENT'),
   phone: z.string().optional(),
 });
 type FormData = z.infer<typeof schema>;
@@ -36,6 +38,7 @@ export default function RecipientsPage() {
   const [resetUserName, setResetUserName] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [resetSubmitting, setResetSubmitting] = useState(false);
+  const [resetConfirmOpen, setResetConfirmOpen] = useState(false);
   const [search, setSearch] = useState('');
 
   const { data: users = [], isLoading } = useQuery<User[]>({
@@ -61,6 +64,14 @@ export default function RecipientsPage() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ['users'] }),
   });
 
+  function requestResetPassword() {
+    if (!resetUserId || newPassword.length < 8) {
+      toast.error('Password must be at least 8 characters');
+      return;
+    }
+    setResetConfirmOpen(true);
+  }
+
   async function submitResetPassword() {
     if (!resetUserId || newPassword.length < 8) {
       toast.error('Password must be at least 8 characters');
@@ -70,6 +81,7 @@ export default function RecipientsPage() {
     try {
       await api.put(`/api/users/${resetUserId}/reset-password`, { password: newPassword });
       toast.success('Password reset successfully');
+      setResetConfirmOpen(false);
       setResetModalOpen(false);
       setNewPassword('');
       setResetUserId(null);
@@ -153,19 +165,21 @@ export default function RecipientsPage() {
         title="User Management"
         breadcrumb={[{ label: 'Dashboard', href: '/dashboard' }, { label: 'Users' }]}
       />
-      <div className="px-6 py-6 space-y-4">
-        <div className="flex items-center gap-3">
-          <input
-            type="text"
-            placeholder="Search users…"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-600"
-          />
-          <Button onClick={() => setModalOpen(true)}>
-            <Plus size={16} /> Add User
-          </Button>
-        </div>
+      <div className="space-y-4 px-4 py-4 sm:px-6 sm:py-6">
+        <Card className="p-4">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
+            <SearchInput
+              className="min-w-0 flex-1"
+              label="Search users"
+              value={search}
+              onChange={setSearch}
+              placeholder="Search by name or email…"
+            />
+            <Button onClick={() => setModalOpen(true)} className="w-full shrink-0 sm:w-auto">
+              <Plus size={16} /> Add User
+            </Button>
+          </div>
+        </Card>
 
         <Card>
           <Table columns={columns} data={filtered} keyField="id" isLoading={isLoading} emptyMessage="No users found." />
@@ -191,7 +205,7 @@ export default function RecipientsPage() {
           <Select
             label="Role"
             required
-            options={[{ value: 'RECIPIENT', label: 'Recipient' }, { value: 'OWNER', label: 'Owner' }]}
+            options={[{ value: 'RECIPIENT', label: 'Recipient' }]}
             error={errors.role?.message}
             {...register('role')}
           />
@@ -205,7 +219,7 @@ export default function RecipientsPage() {
         footer={
           <>
             <Button variant="outline" onClick={() => setResetModalOpen(false)}>Cancel</Button>
-            <Button onClick={submitResetPassword} loading={resetSubmitting}>Reset password</Button>
+            <Button onClick={requestResetPassword} loading={resetSubmitting}>Reset password</Button>
           </>
         }
       >
@@ -221,6 +235,19 @@ export default function RecipientsPage() {
           onChange={(e) => setNewPassword(e.target.value)}
         />
       </Modal>
+
+      <ConfirmDialog
+        open={resetConfirmOpen}
+        title="Reset password?"
+        message={`This will immediately replace the password for ${resetUserName}.`}
+        confirmLabel="Reset password"
+        loading={resetSubmitting}
+        variant="danger"
+        onClose={() => {
+          if (!resetSubmitting) setResetConfirmOpen(false);
+        }}
+        onConfirm={submitResetPassword}
+      />
     </>
   );
 }

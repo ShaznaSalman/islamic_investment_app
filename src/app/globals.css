@@ -54,6 +54,20 @@
   .data-table tr:hover td {
     @apply bg-gray-50;
   }
+
+  .themed-select option {
+    color: #111827;
+    background-color: #ffffff;
+  }
+
+  .themed-select option:checked {
+    color: #ffffff;
+    background-color: rgb(var(--color-primary));
+  }
+
+  .themed-select option:disabled {
+    color: #9ca3af;
+  }
 }
 
 /* Scrollbar styling */

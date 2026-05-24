@@ -26,17 +26,18 @@ export default function Modal({ open, onClose, title, children, size = 'md', foo
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-50 flex items-end justify-center p-0 sm:items-center sm:p-4">
       {/* Backdrop */}
       <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
       {/* Panel */}
       <div
         className={cn(
           'relative bg-white rounded-2xl shadow-xl w-full flex flex-col max-h-[90vh]',
+          'max-h-[92dvh] rounded-b-none sm:rounded-b-2xl',
           sizeClasses[size]
         )}
       >
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+        <div className="flex items-center justify-between px-4 py-4 border-b border-gray-100 sm:px-6">
           <h2 className="text-lg font-semibold text-gray-900">{title}</h2>
           <button
             onClick={onClose}
@@ -45,9 +46,9 @@ export default function Modal({ open, onClose, title, children, size = 'md', foo
             <X size={18} />
           </button>
         </div>
-        <div className="overflow-y-auto px-6 py-4 flex-1">{children}</div>
+        <div className="overflow-y-auto px-4 py-4 flex-1 sm:px-6">{children}</div>
         {footer && (
-          <div className="px-6 py-4 border-t border-gray-100 flex justify-end gap-3">{footer}</div>
+          <div className="flex flex-col-reverse gap-3 border-t border-gray-100 px-4 py-4 sm:flex-row sm:justify-end sm:px-6">{footer}</div>
         )}
       </div>
     </div>

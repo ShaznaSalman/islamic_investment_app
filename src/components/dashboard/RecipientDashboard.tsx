@@ -37,20 +37,20 @@ export default function RecipientDashboard() {
   return (
     <>
       <Header title="My Dashboard" />
-      <div className="px-4 sm:px-6 py-6 space-y-6">
-        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary-950 via-primary-900 to-primary-800 px-6 py-8">
+      <div className="space-y-6 px-4 py-4 sm:px-6 sm:py-6">
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary-950 via-primary-900 to-primary-800 px-4 py-6 sm:px-6 sm:py-8">
           <div className="relative z-10">
             <p className="text-primary-300 text-sm font-medium">
               {getGreeting()} &mdash; <span className="font-arabic">بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيم</span>
             </p>
-            <h1 className="text-3xl font-bold text-white mt-1.5">{user?.name}</h1>
+            <h1 className="mt-1.5 text-2xl font-bold text-white sm:text-3xl">{user?.name}</h1>
             <p className="text-primary-300 text-sm mt-2">
               {isLoading ? 'Loading…' : `${total} assigned investment${total !== 1 ? 's' : ''}`}
             </p>
           </div>
         </div>
 
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 gap-4 min-[420px]:grid-cols-2 lg:grid-cols-4">
           {isLoading ? (
             Array.from({ length: 4 }).map((_, i) => (
               <div key={i} className="h-28 rounded-2xl animate-pulse bg-gray-200" />
@@ -110,12 +110,12 @@ export default function RecipientDashboard() {
                   const meta = STATUS_META[inv.status as keyof typeof STATUS_META] ?? STATUS_META.PENDING;
                   return (
                     <li key={inv.id}>
-                      <Link href={`/investments/${inv.id}`} className="flex items-center justify-between py-3 hover:bg-gray-50 px-2 rounded-lg">
-                        <div>
-                          <p className="text-sm font-semibold text-gray-900">{inv.title}</p>
+                      <Link href={`/investments/${inv.id}`} className="flex items-center justify-between gap-3 rounded-lg px-2 py-3 hover:bg-gray-50">
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-semibold text-gray-900">{inv.title}</p>
                           <p className="text-xs text-gray-400">{formatDate(inv.startDate)}</p>
                         </div>
-                        <div className="text-right">
+                        <div className="shrink-0 text-right">
                           <p className="text-sm font-bold"><CurrencyAmount amount={inv.principalAmount} /></p>
                           <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${meta.bg} ${meta.text}`}>
                             {investmentStatusLabels[inv.status]}
@@ -139,12 +139,12 @@ export default function RecipientDashboard() {
                 {stats.recentPayments.map((p: {
                   id: string; amount: number; paymentDate: string; investmentTitle: string; investmentId: string;
                 }) => (
-                  <li key={p.id} className="flex items-center justify-between py-3 px-2">
-                    <div>
-                      <p className="text-sm font-medium text-gray-900">{p.investmentTitle}</p>
+                  <li key={p.id} className="flex items-center justify-between gap-3 px-2 py-3">
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-medium text-gray-900">{p.investmentTitle}</p>
                       <p className="text-xs text-gray-400">{formatDate(p.paymentDate)}</p>
                     </div>
-                    <p className="text-sm font-bold text-green-700"><CurrencyAmount amount={p.amount} /></p>
+                    <p className="shrink-0 text-sm font-bold text-green-700"><CurrencyAmount amount={p.amount} /></p>
                   </li>
                 ))}
               </ul>

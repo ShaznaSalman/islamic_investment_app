@@ -28,7 +28,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         ref={ref}
         disabled={disabled || loading}
         className={cn(
-          'inline-flex items-center justify-center gap-2 rounded-lg font-medium transition-colors',
+          'inline-flex items-center justify-center gap-2 rounded-lg font-medium transition-colors whitespace-nowrap shrink-0',
           'focus:outline-none focus:ring-2 focus:ring-offset-1',
           'disabled:opacity-50 disabled:cursor-not-allowed',
           variantClasses[variant],

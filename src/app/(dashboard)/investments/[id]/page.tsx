@@ -106,7 +106,7 @@ export default function InvestmentDetailPage() {
           { label: investment.title },
         ]}
       />
-      <div className="px-6 py-6 space-y-6">
+      <div className="space-y-6 px-4 py-4 sm:px-6 sm:py-6">
         {/* Overview */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <Card className="lg:col-span-2">
@@ -118,13 +118,13 @@ export default function InvestmentDetailPage() {
                     options={STATUS_OPTIONS}
                     value={investment.status}
                     onChange={(e) => updateMutation.mutate({ status: e.target.value as InvestmentStatus })}
-                    className="w-36"
+                    className="w-full sm:w-36"
                   />
                 )
               }
             />
             <CardBody>
-              <div className="grid grid-cols-2 gap-x-8 gap-y-4 text-sm">
+              <div className="grid gap-x-8 gap-y-4 text-sm sm:grid-cols-2">
                 <div>
                   <p className="text-xs text-gray-400">Recipient</p>
                   <p className="font-medium">{investment.recipient?.name}</p>
@@ -153,19 +153,19 @@ export default function InvestmentDetailPage() {
                   <p className="font-medium">{formatDate(investment.endDate)}</p>
                 </div>
                 {investment.purpose && (
-                  <div className="col-span-2">
+                  <div className="sm:col-span-2">
                     <p className="text-xs text-gray-400">Purpose</p>
                     <p className="font-medium">{investment.purpose}</p>
                   </div>
                 )}
                 {investment.notes && (
-                  <div className="col-span-2">
+                  <div className="sm:col-span-2">
                     <p className="text-xs text-gray-400">Notes</p>
                     <p className="text-gray-600">{investment.notes}</p>
                   </div>
                 )}
                 {investment.shariaAdvisorNotes && (
-                  <div className="col-span-2 bg-primary-50 border border-primary-200 rounded-lg p-3">
+                  <div className="rounded-lg border border-primary-200 bg-primary-50 p-3 sm:col-span-2">
                     <p className="text-xs text-primary-600 font-medium">Shariah Advisor Notes</p>
                     <p className="text-sm text-primary-800 mt-1">{investment.shariaAdvisorNotes}</p>
                   </div>
@@ -250,7 +250,8 @@ export default function InvestmentDetailPage() {
             {(repayments as Repayment[]).length === 0 ? (
               <p className="text-sm text-gray-400 px-6 py-6 text-center">No repayments recorded yet.</p>
             ) : (
-              <table className="min-w-full data-table">
+              <div className="overflow-x-auto">
+              <table className="min-w-[52rem] data-table sm:min-w-full">
                 <thead>
                   <tr>
                     <th>Date</th>
@@ -293,6 +294,7 @@ export default function InvestmentDetailPage() {
                   ))}
                 </tbody>
               </table>
+              </div>
             )}
           </CardBody>
         </Card>
@@ -314,7 +316,7 @@ export default function InvestmentDetailPage() {
         <form id="repayment-form" onSubmit={handleSubmit(onRepaymentSubmit)} className="space-y-4">
           <Input label="Payment Date" type="date" required error={errors.paymentDate?.message} {...register('paymentDate')} />
           <Input label="Total Amount" type="number" step="0.001" min="0" leftAddon="OMR" required error={errors.amount?.message} {...register('amount')} />
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid gap-4 sm:grid-cols-2">
             <Input label="Principal Portion" type="number" step="0.001" min="0" leftAddon="OMR" error={errors.principalPortion?.message} {...register('principalPortion')} />
             <Input label="Profit Portion" type="number" step="0.001" min="0" leftAddon="OMR" error={errors.profitPortion?.message} {...register('profitPortion')} />
           </div>

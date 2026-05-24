@@ -120,6 +120,8 @@ export interface InvestmentFormData {
   notes?: string;
   shariaAdvisorNotes?: string;
   nextRepaymentDate?: string;
+  lossHandlingAcknowledged?: boolean;
+  lossHandlingNotes?: string;
 }
 
 export interface RepaymentFormData {

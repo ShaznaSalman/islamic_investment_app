@@ -7,6 +7,7 @@ import Header from '@/components/layout/Header';
 import { Card, CardHeader, CardBody } from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
+import ConfirmDialog from '@/components/ui/ConfirmDialog';
 import api from '@/lib/api';
 import toast from 'react-hot-toast';
 import { useForm } from 'react-hook-form';
@@ -44,15 +45,26 @@ interface AuditLogRow {
 
 export default function SettingsPage() {
   const { user, refreshUser } = useAuth();
-  const [activeSection, setActiveSection] = useState<'profile' | 'password' | 'system'>('profile');
+  const [activeSection, setActiveSection] = useState<'profile' | 'password' | 'notifications' | 'system'>('profile');
   const [cronRunning, setCronRunning] = useState(false);
   const [cronResult, setCronResult] = useState<string | null>(null);
   const [photoUploading, setPhotoUploading] = useState(false);
   const [usdRate, setUsdRateState] = useState('2.6');
+  const [passwordConfirmOpen, setPasswordConfirmOpen] = useState(false);
+  const [passwordChanging, setPasswordChanging] = useState(false);
+  const [pendingPasswordData, setPendingPasswordData] = useState<PasswordForm | null>(null);
+  const [notificationPrefs, setNotificationPrefs] = useState({
+    inAppDueReminders: true,
+    inAppOverdueAlerts: true,
+    inAppAssignments: true,
+    emailReminders: true,
+  });
   const photoRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     setUsdRateState(String(getUsdRate()));
+    const stored = localStorage.getItem('iia_notification_preferences');
+    if (stored) setNotificationPrefs(JSON.parse(stored));
   }, []);
 
   const {
@@ -116,13 +128,26 @@ export default function SettingsPage() {
     toast.success('USD rate saved for this browser');
   }
 
-  async function onPasswordSubmit(data: PasswordForm) {
-    await api.put('/api/auth/me/password', {
-      currentPassword: data.currentPassword,
-      newPassword: data.newPassword,
-    });
-    toast.success('Password changed successfully');
-    resetPass();
+  function onPasswordSubmit(data: PasswordForm) {
+    setPendingPasswordData(data);
+    setPasswordConfirmOpen(true);
+  }
+
+  async function confirmPasswordChange() {
+    if (!pendingPasswordData) return;
+    setPasswordChanging(true);
+    try {
+      await api.put('/api/auth/me/password', {
+        currentPassword: pendingPasswordData.currentPassword,
+        newPassword: pendingPasswordData.newPassword,
+      });
+      toast.success('Password changed successfully');
+      resetPass();
+      setPendingPasswordData(null);
+      setPasswordConfirmOpen(false);
+    } finally {
+      setPasswordChanging(false);
+    }
   }
 
   async function runNotificationCheck() {
@@ -139,10 +164,18 @@ export default function SettingsPage() {
     }
   }
 
-  type SectionId = 'profile' | 'password' | 'system';
+  function updateNotificationPref(key: keyof typeof notificationPrefs, value: boolean) {
+    const next = { ...notificationPrefs, [key]: value };
+    setNotificationPrefs(next);
+    localStorage.setItem('iia_notification_preferences', JSON.stringify(next));
+    toast.success('Notification preference saved');
+  }
+
+  type SectionId = 'profile' | 'password' | 'notifications' | 'system';
   const sections: { id: SectionId; label: string }[] = [
     { id: 'profile', label: 'Profile' },
     { id: 'password', label: 'Change Password' },
+    { id: 'notifications', label: 'Notifications' },
     ...(user?.role === 'OWNER' ? [{ id: 'system' as const, label: 'System' }] : []),
   ];
 
@@ -152,14 +185,14 @@ export default function SettingsPage() {
         title="Settings"
         breadcrumb={[{ label: 'Dashboard', href: '/dashboard' }, { label: 'Settings' }]}
       />
-      <div className="px-6 py-6 flex gap-6">
-        <div className="w-48 shrink-0">
-          <nav className="space-y-1">
+      <div className="flex flex-col gap-6 px-4 py-4 sm:px-6 sm:py-6 lg:flex-row">
+        <div className="lg:w-48 lg:shrink-0">
+          <nav className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 sm:mx-0 sm:px-0 lg:block lg:space-y-1 lg:overflow-visible lg:pb-0">
             {sections.map((s) => (
               <button
                 key={s.id}
                 onClick={() => setActiveSection(s.id)}
-                className={`w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                className={`shrink-0 rounded-lg px-3 py-2 text-left text-sm font-medium transition-colors lg:w-full ${
                   activeSection === s.id
                     ? 'bg-primary-800 text-white'
                     : 'text-gray-600 hover:bg-gray-100'
@@ -171,13 +204,13 @@ export default function SettingsPage() {
           </nav>
         </div>
 
-        <div className="flex-1 max-w-2xl space-y-6">
+        <div className="w-full max-w-3xl flex-1 space-y-6">
           {activeSection === 'profile' && (
             <Card>
               <CardHeader title="Profile Information" />
               <CardBody>
                 <form onSubmit={hsProfile(onProfileSubmit)} className="space-y-4">
-                  <div className="flex items-center gap-4 pb-4 border-b border-gray-100">
+                  <div className="flex flex-col gap-4 border-b border-gray-100 pb-4 sm:flex-row sm:items-center">
                     {user?.photoUrl ? (
                       <Image
                         src={user.photoUrl}
@@ -192,7 +225,7 @@ export default function SettingsPage() {
                         {user?.name?.slice(0, 2).toUpperCase()}
                       </div>
                     )}
-                    <div className="flex-1">
+                    <div className="min-w-0 flex-1">
                       <p className="font-semibold text-gray-900">{user?.name}</p>
                       <p className="text-sm text-gray-500">{user?.email}</p>
                       <p className="text-xs text-gray-400 capitalize">{user?.role?.toLowerCase()}</p>
@@ -201,7 +234,7 @@ export default function SettingsPage() {
                           ref={photoRef}
                           type="file"
                           accept=".jpg,.jpeg,.png,.webp"
-                          className="text-xs text-gray-500"
+                          className="text-xs text-gray-500 file:mr-3 file:rounded-lg file:border-0 file:bg-primary-50 file:px-3 file:py-1.5 file:text-xs file:font-medium file:text-primary-700 hover:file:bg-primary-100"
                         />
                         <Button type="button" size="sm" variant="outline" onClick={onPhotoUpload} loading={photoUploading}>
                           Upload photo
@@ -232,16 +265,46 @@ export default function SettingsPage() {
             </Card>
           )}
 
+          {activeSection === 'notifications' && (
+            <Card>
+              <CardHeader title="Notification Settings" subtitle="Choose which alerts should be surfaced for this browser" />
+              <CardBody className="space-y-3">
+                {[
+                  ['inAppDueReminders', 'Repayment due reminders', 'Show reminders when a repayment is due within 7 days.'],
+                  ['inAppOverdueAlerts', 'Overdue payment alerts', 'Show alerts when a repayment becomes overdue.'],
+                  ['inAppAssignments', 'New investment assignments', 'Show notifications when an investment is assigned.'],
+                  ['emailReminders', 'Email reminders', 'Allow email reminders where email is configured.'],
+                ].map(([key, label, description]) => (
+                  <label key={key} className="flex items-start justify-between gap-4 rounded-lg border border-gray-100 p-3">
+                    <span>
+                      <span className="block text-sm font-medium text-gray-900">{label}</span>
+                      <span className="mt-0.5 block text-xs text-gray-500">{description}</span>
+                    </span>
+                    <input
+                      type="checkbox"
+                      checked={notificationPrefs[key as keyof typeof notificationPrefs]}
+                      onChange={(e) => updateNotificationPref(key as keyof typeof notificationPrefs, e.target.checked)}
+                      className="mt-1 h-4 w-4 rounded border-gray-300 text-primary-700 focus:ring-primary-600"
+                    />
+                  </label>
+                ))}
+                <p className="text-xs text-gray-500">
+                  System-generated notification records are kept for audit history; these settings control user-facing alert preferences.
+                </p>
+              </CardBody>
+            </Card>
+          )}
+
           {activeSection === 'system' && user?.role === 'OWNER' && (
             <>
               <Card>
                 <CardHeader title="Currency Display" subtitle="OMR is primary; USD is shown as reference" />
                 <CardBody className="space-y-4">
-                  <div className="flex justify-between items-center text-sm">
+                  <div className="flex flex-col gap-1 text-sm sm:flex-row sm:items-center sm:justify-between">
                     <span className="text-gray-600">Primary currency</span>
                     <span className="font-semibold text-primary-800">OMR — Omani Rial</span>
                   </div>
-                  <div className="flex gap-3 items-end">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
                     <Input
                       label="OMR → USD rate"
                       type="number"
@@ -251,7 +314,7 @@ export default function SettingsPage() {
                       onChange={(e) => setUsdRateState(e.target.value)}
                       hint="Used for ≈ USD amounts across the app (saved in this browser)"
                     />
-                    <Button type="button" onClick={saveUsdRate}>Save rate</Button>
+                    <Button type="button" onClick={saveUsdRate} className="w-full sm:w-auto">Save rate</Button>
                   </div>
                 </CardBody>
               </Card>
@@ -305,6 +368,18 @@ export default function SettingsPage() {
           )}
         </div>
       </div>
+      <ConfirmDialog
+        open={passwordConfirmOpen}
+        title="Change password?"
+        message="Your password will be updated immediately. Use the new password the next time you sign in."
+        confirmLabel="Change password"
+        loading={passwordChanging}
+        onClose={() => {
+          if (!passwordChanging) setPasswordConfirmOpen(false);
+        }}
+        onConfirm={confirmPasswordChange}
+      />
     </>
   );
 }
+

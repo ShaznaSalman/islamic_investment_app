@@ -30,7 +30,7 @@ function ProfitShareCalc() {
         subtitle="Calculate how profit is split between owner and recipient"
       />
       <CardBody className="space-y-4">
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid gap-4 sm:grid-cols-2">
           <Input
             label="Investment Amount"
             type="number" step="0.001" min="0"
@@ -48,7 +48,7 @@ function ProfitShareCalc() {
             placeholder="80000"
           />
         </div>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid gap-4 sm:grid-cols-2">
           <Input
             label="Owner's Profit Ratio (%)"
             type="number" min="0" max="100"
@@ -67,7 +67,7 @@ function ProfitShareCalc() {
         <Button onClick={calculate}>Calculate</Button>
 
         {result && (
-          <div className="mt-4 grid grid-cols-2 gap-4">
+          <div className="mt-4 grid gap-4 sm:grid-cols-2">
             <div className="bg-primary-50 border border-primary-200 rounded-xl p-4 text-center">
               <p className="text-xs text-primary-600 font-medium">Owner Receives</p>
               <p className="text-2xl font-bold text-primary-800 mt-1">{formatOMR(result.ownerShare)}</p>
@@ -104,14 +104,14 @@ function ProjectedReturnCalc() {
     <Card>
       <CardHeader title="Projected Return Calculator" subtitle="Estimate expected returns before finalising a deal" />
       <CardBody className="space-y-4">
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid gap-4 sm:grid-cols-2">
           <Input label="Investment Amount" type="number" step="0.001" leftAddon="OMR" value={investment} onChange={(e) => setInvestment(e.target.value)} placeholder="100000" />
           <Input label="Expected Profit Rate (%)" type="number" min="0" value={expectedRate} onChange={(e) => setExpectedRate(e.target.value)} placeholder="15" />
         </div>
         <Input label="Owner's Profit Ratio (%)" type="number" min="0" max="100" value={ownerRatio} onChange={(e) => setOwnerRatio(e.target.value)} placeholder="70" />
         <Button onClick={calculate}>Calculate</Button>
         {result && (
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid gap-3 sm:grid-cols-3">
             <div className="bg-gray-50 border rounded-xl p-4 text-center">
               <p className="text-xs text-gray-500">Total Profit</p>
               <p className="text-lg font-bold text-gray-900 mt-1">{formatOMR(result.totalProfit)}</p>
@@ -152,13 +152,13 @@ function PurificationCalc() {
         <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 text-xs text-amber-800">
           <strong>Note:</strong> If any portion of income is from non-halal sources, it must be donated to charity (not counted as the owner&apos;s income).
         </div>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid gap-4 sm:grid-cols-2">
           <Input label="Total Income" type="number" step="0.001" leftAddon="OMR" value={totalIncome} onChange={(e) => setTotalIncome(e.target.value)} placeholder="50000" />
           <Input label="Non-Halal Portion (%)" type="number" min="0" max="100" value={nonHalalPercent} onChange={(e) => setNonHalalPercent(e.target.value)} placeholder="5" />
         </div>
         <Button onClick={calculate}>Calculate</Button>
         {result && (
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid gap-4 sm:grid-cols-2">
             <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-center">
               <p className="text-xs text-red-600 font-medium">Donate to Charity</p>
               <p className="text-xl font-bold text-red-700 mt-1">{formatOMR(result.amountToPurify)}</p>
@@ -203,7 +203,7 @@ function InstallmentCalc() {
     <Card>
       <CardHeader title="Installment Calculator (Murabahah)" subtitle="Break down a cost-plus sale into equal installments" />
       <CardBody className="space-y-4">
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid gap-4 sm:grid-cols-3">
           <Input label="Cost Price" type="number" step="0.001" leftAddon="OMR" value={costPrice} onChange={(e) => setCostPrice(e.target.value)} placeholder="10000" />
           <Input label="Markup (%)" type="number" min="0" value={markup} onChange={(e) => setMarkup(e.target.value)} placeholder="20" />
           <Input label="Number of Installments" type="number" min="1" value={installments} onChange={(e) => setInstallments(e.target.value)} placeholder="12" />
@@ -211,7 +211,7 @@ function InstallmentCalc() {
         <Button onClick={calculate}>Generate Schedule</Button>
         {result && (
           <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid gap-4 sm:grid-cols-2">
               <div className="bg-primary-50 border border-primary-200 rounded-xl p-4 text-center">
                 <p className="text-xs text-primary-600">Sale Price (incl. markup)</p>
                 <p className="text-xl font-bold text-primary-800 mt-1">{formatOMR(result.salePrice)}</p>
@@ -253,13 +253,13 @@ export default function CalculatorPage() {
         title="Calculator Suite"
         breadcrumb={[{ label: 'Dashboard', href: '/dashboard' }, { label: 'Calculator' }]}
       />
-      <div className="px-6 py-6 space-y-4">
-        <div className="flex flex-wrap gap-2">
+      <div className="space-y-4 px-4 py-4 sm:px-6 sm:py-6">
+        <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 sm:mx-0 sm:flex-wrap sm:px-0">
           {tabs.map((tab, i) => (
             <button
               key={tab}
               onClick={() => setActiveTab(i)}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              className={`shrink-0 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                 activeTab === i
                   ? 'bg-primary-800 text-white'
                   : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'
@@ -270,7 +270,7 @@ export default function CalculatorPage() {
           ))}
         </div>
 
-        <div className={activeTab === 2 ? 'max-w-4xl' : 'max-w-2xl'}>
+        <div className={activeTab === 2 ? 'max-w-4xl' : 'max-w-3xl'}>
           {activeTab === 0 && <ProfitShareCalc />}
           {activeTab === 1 && <ProjectedReturnCalc />}
           {activeTab === 2 && (

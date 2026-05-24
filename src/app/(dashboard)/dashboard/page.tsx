@@ -81,10 +81,10 @@ export default function DashboardPage() {
   return (
     <>
       <Header title="Dashboard" />
-      <div className="px-4 sm:px-6 py-6 space-y-6">
+      <div className="space-y-6 px-4 py-4 sm:px-6 sm:py-6">
 
         {/* ── Hero Banner ── */}
-        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary-950 via-primary-900 to-primary-800 px-6 py-8">
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary-950 via-primary-900 to-primary-800 px-4 py-6 sm:px-6 sm:py-8">
           {/* Islamic star pattern */}
           <svg className="absolute inset-0 w-full h-full opacity-[0.05]" xmlns="http://www.w3.org/2000/svg">
             <defs>
@@ -103,7 +103,7 @@ export default function DashboardPage() {
               <p className="text-primary-300 text-sm font-medium tracking-wide">
                 {getGreeting()} &mdash; <span className="font-arabic">بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيم</span>
               </p>
-              <h1 className="text-3xl font-bold text-white mt-1.5 leading-tight">{user?.name}</h1>
+              <h1 className="mt-1.5 text-2xl font-bold leading-tight text-white sm:text-3xl">{user?.name}</h1>
               <p className="text-primary-300 text-sm mt-2">
                 {isLoading
                   ? 'Loading portfolio…'
@@ -121,7 +121,7 @@ export default function DashboardPage() {
         </div>
 
         {/* ── KPI Cards ── */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 gap-4 min-[420px]:grid-cols-2 lg:grid-cols-4">
           {isLoading ? (
             Array.from({ length: 4 }).map((_, i) => (
               <div key={i} className="h-32 rounded-2xl animate-pulse bg-gray-200" />
@@ -160,7 +160,7 @@ export default function DashboardPage() {
         </div>
 
         {/* ── Charts + Recent Investments ── */}
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
 
           {/* Charts panel */}
           <div className="space-y-5">
@@ -195,7 +195,7 @@ export default function DashboardPage() {
                 </ResponsiveContainer>
               )}
 
-              <div className="grid grid-cols-2 gap-x-4 gap-y-2 mt-3">
+              <div className="mt-3 grid grid-cols-1 gap-x-4 gap-y-2 min-[420px]:grid-cols-2">
                 {(['ACTIVE', 'PENDING', 'COMPLETED', 'DEFAULTED'] as const).map((s) => (
                   <Link key={s} href={`/investments?status=${s}`} className="flex items-center gap-1.5 group">
                     <span className={`w-2 h-2 rounded-full flex-shrink-0 ${STATUS_META[s].dot}`} />
@@ -231,7 +231,7 @@ export default function DashboardPage() {
 
           {/* Recent Investments */}
           <div className="xl:col-span-2 bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden flex flex-col">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 flex-shrink-0">
+            <div className="flex flex-col gap-3 border-b border-gray-100 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
               <div>
                 <h3 className="text-sm font-semibold text-gray-900">Recent Investments</h3>
                 <p className="text-xs text-gray-400 mt-0.5">Latest activity across your portfolio</p>
@@ -273,7 +273,7 @@ export default function DashboardPage() {
                     <li key={inv.id}>
                       <Link
                         href={`/investments/${inv.id}`}
-                        className="flex items-center gap-4 px-6 py-4 hover:bg-gray-50/70 transition-colors group"
+                        className="group flex items-center gap-3 px-4 py-4 transition-colors hover:bg-gray-50/70 sm:gap-4 sm:px-6"
                       >
                         <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary-100 to-primary-200 flex items-center justify-center flex-shrink-0 shadow-sm">
                           <span className="text-xs font-bold text-primary-700">{initials}</span>
@@ -286,7 +286,7 @@ export default function DashboardPage() {
                             {inv.recipient?.name} &middot; {formatDate(inv.startDate)}
                           </p>
                         </div>
-                        <div className="flex flex-col items-end gap-1 flex-shrink-0">
+                        <div className="flex flex-shrink-0 flex-col items-end gap-1">
                           <span className="text-sm font-bold text-gray-900">
                             <CurrencyAmount amount={inv.principalAmount} />
                           </span>
@@ -306,7 +306,7 @@ export default function DashboardPage() {
         {/* ── Quick Actions ── */}
         <div>
           <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3 px-0.5">Quick Actions</p>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div className="grid grid-cols-1 gap-3 min-[420px]:grid-cols-2 sm:grid-cols-4">
             {[
               {
                 href: '/investments/new', icon: Plus, label: 'New Investment',
@@ -328,12 +328,12 @@ export default function DashboardPage() {
               <Link
                 key={a.href}
                 href={a.href}
-                className={`flex items-center gap-3 p-4 rounded-xl border transition-all hover:shadow-sm ${a.bg}`}
+                className={`flex items-center gap-3 rounded-xl border p-4 transition-all hover:shadow-sm ${a.bg}`}
               >
                 <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${a.iconBg}`}>
                   <a.icon size={15} className={a.text} />
                 </div>
-                <span className={`text-sm font-semibold ${a.text}`}>{a.label}</span>
+                <span className={`min-w-0 text-sm font-semibold ${a.text}`}>{a.label}</span>
               </Link>
             ))}
           </div>

@@ -21,7 +21,7 @@ export default function Table<T>({
 }: TableProps<T>) {
   return (
     <div className="overflow-x-auto rounded-lg border border-gray-100">
-      <table className="min-w-full data-table">
+      <table className="min-w-[48rem] data-table sm:min-w-full">
         <thead>
           <tr>
             {columns.map((col) => (

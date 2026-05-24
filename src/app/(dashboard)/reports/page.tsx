@@ -88,12 +88,12 @@ export default function ReportsPage() {
         title="Reports"
         breadcrumb={[{ label: 'Dashboard', href: '/dashboard' }, { label: 'Reports' }]}
       />
-      <div className="px-6 py-6 space-y-6">
+      <div className="space-y-6 px-4 py-4 sm:px-6 sm:py-6">
         {/* Filters */}
         <Card>
           <CardHeader title="Generate Report" subtitle="Select report type and apply filters" />
           <CardBody>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               <Select
                 label="Report Type"
                 options={REPORT_TYPES}
@@ -131,7 +131,7 @@ export default function ReportsPage() {
               )}
             </div>
             <div className="mt-4 flex gap-3">
-              <Button onClick={generateReport} loading={loading}>
+              <Button onClick={generateReport} loading={loading} className="w-full sm:w-auto">
                 <BarChart3 size={16} /> Generate Report
               </Button>
             </div>
@@ -145,7 +145,7 @@ export default function ReportsPage() {
               title={REPORT_TYPES.find((r) => r.value === reportType)?.label || 'Report'}
               subtitle={`Generated on ${formatDate(new Date().toISOString(), true)}`}
               action={
-                <div className="flex gap-2">
+                <div className="flex flex-wrap gap-2">
                   <Button size="sm" variant="outline" onClick={exportPdf}>
                     <Download size={14} /> PDF
                   </Button>
@@ -178,7 +178,8 @@ export default function ReportsPage() {
 
 function InvestmentSummaryTable({ data }: { data: Investment[] }) {
   return (
-    <table className="min-w-full data-table">
+    <div className="overflow-x-auto">
+    <table className="min-w-[48rem] data-table sm:min-w-full">
       <thead><tr><th>Title</th><th>Recipient</th><th>Type</th><th>Amount</th><th>Start Date</th><th>Status</th></tr></thead>
       <tbody className="bg-white divide-y divide-gray-100">
         {data.map((inv) => (
@@ -197,13 +198,14 @@ function InvestmentSummaryTable({ data }: { data: Investment[] }) {
         ))}
       </tbody>
     </table>
+    </div>
   );
 }
 
 function ProfitReportTable({ data }: { data: { repayments: Repayment[]; totals: { totalAmount: number; totalProfit: number; totalPrincipal: number } } }) {
   return (
     <div>
-      <div className="grid grid-cols-3 gap-4 p-6 border-b border-gray-100">
+      <div className="grid gap-4 border-b border-gray-100 p-4 sm:grid-cols-3 sm:p-6">
         <div className="text-center">
           <p className="text-xs text-gray-400">Total Received</p>
           <p className="text-xl font-bold text-primary-800">{formatOMR(data.totals.totalAmount)}</p>
@@ -217,7 +219,8 @@ function ProfitReportTable({ data }: { data: { repayments: Repayment[]; totals: 
           <p className="text-xl font-bold text-gray-900">{formatOMR(data.totals.totalPrincipal)}</p>
         </div>
       </div>
-      <table className="min-w-full data-table">
+      <div className="overflow-x-auto">
+      <table className="min-w-[42rem] data-table sm:min-w-full">
         <thead><tr><th>Date</th><th>Amount</th><th>Principal</th><th>Profit</th><th>Notes</th></tr></thead>
         <tbody className="bg-white divide-y divide-gray-100">
           {data.repayments.map((r) => (
@@ -231,6 +234,7 @@ function ProfitReportTable({ data }: { data: { repayments: Repayment[]; totals: 
           ))}
         </tbody>
       </table>
+      </div>
     </div>
   );
 }
@@ -239,7 +243,8 @@ function RepaymentStatusTable({ data }: {
   data: { id: string; title: string; recipient: { name: string }; principalAmount: number; totalRepaid: number; outstanding: number; nextRepaymentDate: string | null; status: string; isOverdue: boolean }[];
 }) {
   return (
-    <table className="min-w-full data-table">
+    <div className="overflow-x-auto">
+    <table className="min-w-[48rem] data-table sm:min-w-full">
       <thead><tr><th>Investment</th><th>Recipient</th><th>Principal</th><th>Repaid</th><th>Outstanding</th><th>Next Due</th><th>Status</th></tr></thead>
       <tbody className="bg-white divide-y divide-gray-100">
         {data.map((row) => (
@@ -257,6 +262,7 @@ function RepaymentStatusTable({ data }: {
         ))}
       </tbody>
     </table>
+    </div>
   );
 }
 
@@ -266,7 +272,7 @@ function RecipientReport({ data }: { data: { recipient: { name: string; email: s
       <div className="px-6 py-4 border-b border-gray-100">
         <p className="font-semibold text-lg text-gray-900">{data.recipient?.name}</p>
         <p className="text-xs text-gray-400">{data.recipient?.email}</p>
-        <div className="grid grid-cols-3 gap-4 mt-4">
+        <div className="mt-4 grid gap-3 sm:grid-cols-3 sm:gap-4">
           <div className="text-center bg-gray-50 rounded-lg p-3">
             <p className="text-xs text-gray-400">Total Invested</p>
             <p className="font-bold text-gray-900">{formatOMR(data.summary.totalInvested)}</p>
@@ -281,7 +287,8 @@ function RecipientReport({ data }: { data: { recipient: { name: string; email: s
           </div>
         </div>
       </div>
-      <table className="min-w-full data-table">
+      <div className="overflow-x-auto">
+      <table className="min-w-[42rem] data-table sm:min-w-full">
         <thead><tr><th>Investment</th><th>Type</th><th>Amount</th><th>Repaid</th><th>Status</th></tr></thead>
         <tbody className="bg-white divide-y divide-gray-100">
           {data.investments?.map((inv: Investment) => (
@@ -299,6 +306,7 @@ function RecipientReport({ data }: { data: { recipient: { name: string; email: s
           ))}
         </tbody>
       </table>
+      </div>
     </div>
   );
 }

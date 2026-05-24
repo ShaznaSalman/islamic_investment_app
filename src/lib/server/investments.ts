@@ -7,7 +7,7 @@ export async function listInvestments(
   user: AuthUser,
   query: Record<string, string | undefined>,
 ) {
-  const { status, type, recipientId, search, page = '1', limit = '20' } = query;
+  const { status, type, recipientId, search, from, to, page = '1', limit = '20' } = query;
   const where: Record<string, unknown> = {};
 
   if (user.role === 'RECIPIENT') {
@@ -22,7 +22,13 @@ export async function listInvestments(
     where.OR = [
       { title: { contains: search, mode: 'insensitive' } },
       { purpose: { contains: search, mode: 'insensitive' } },
+      { recipient: { name: { contains: search, mode: 'insensitive' } } },
     ];
+  }
+  if (from || to) {
+    where.startDate = {};
+    if (from) (where.startDate as Record<string, unknown>).gte = new Date(from);
+    if (to) (where.startDate as Record<string, unknown>).lte = new Date(to);
   }
 
   const pageNum = parseInt(page, 10);
@@ -67,10 +73,17 @@ export async function createInvestment(user: AuthUser, body: Record<string, unkn
   const {
     title, recipientId, type, principalAmount, ownerProfitRatio, recipientProfitRatio,
     startDate, endDate, purpose, notes, shariaAdvisorNotes, nextRepaymentDate,
-  } = body as Record<string, string | number>;
+    lossHandlingAcknowledged, lossHandlingNotes,
+  } = body as Record<string, string | number | boolean>;
 
   if (Number(ownerProfitRatio) + Number(recipientProfitRatio) !== 100) {
     throw new ApiError(400, 'Profit ratios must sum to 100');
+  }
+  if (lossHandlingAcknowledged !== 'true' && lossHandlingAcknowledged !== true) {
+    throw new ApiError(400, 'Loss handling must be acknowledged before creating an investment');
+  }
+  if (!lossHandlingNotes || String(lossHandlingNotes).trim().length < 10) {
+    throw new ApiError(400, 'Loss handling notes are required');
   }
 
   const recipient = await prisma.user.findUnique({ where: { id: String(recipientId) } });
@@ -81,14 +94,17 @@ export async function createInvestment(user: AuthUser, body: Record<string, unkn
       title: String(title),
       recipientId: String(recipientId),
       type: type as InvestmentType,
-      principalAmount,
-      ownerProfitRatio,
-      recipientProfitRatio,
+      principalAmount: Number(principalAmount),
+      ownerProfitRatio: Number(ownerProfitRatio),
+      recipientProfitRatio: Number(recipientProfitRatio),
       startDate: new Date(String(startDate)),
       endDate: endDate ? new Date(String(endDate)) : null,
       nextRepaymentDate: nextRepaymentDate ? new Date(String(nextRepaymentDate)) : null,
       purpose: purpose ? String(purpose) : null,
-      notes: notes ? String(notes) : null,
+      notes: [
+        notes ? String(notes) : '',
+        `Loss handling: ${String(lossHandlingNotes)}`,
+      ].filter(Boolean).join('\n\n') || null,
       shariaAdvisorNotes: shariaAdvisorNotes ? String(shariaAdvisorNotes) : null,
     },
     include: {

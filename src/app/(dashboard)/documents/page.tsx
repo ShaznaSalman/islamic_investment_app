@@ -115,20 +115,24 @@ function DocumentsPageContent() {
         title="Document Center"
         breadcrumb={[{ label: 'Dashboard', href: '/dashboard' }, { label: 'Documents' }]}
       />
-      <div className="px-6 py-6 space-y-4">
-        <div className="flex items-center gap-3">
-          <Select
-            options={investmentOptions}
-            value={selectedInvestmentId}
-            onChange={(e) => setSelectedInvestmentId(e.target.value)}
-            className="w-72"
-          />
-          {user?.role === 'OWNER' && (
-            <Button onClick={() => setUploadModalOpen(true)}>
-              <Upload size={16} /> Upload Document
-            </Button>
-          )}
-        </div>
+      <div className="space-y-4 px-4 py-4 sm:px-6 sm:py-6">
+        <Card className="p-4">
+          <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end">
+            <Select
+              label="Investment"
+              compact
+              options={investmentOptions}
+              value={selectedInvestmentId}
+              onChange={(e) => setSelectedInvestmentId(e.target.value)}
+              className="w-full sm:w-72 sm:min-w-[16rem] sm:max-w-md sm:shrink-0"
+            />
+            {user?.role === 'OWNER' && (
+              <Button onClick={() => setUploadModalOpen(true)} className="w-full shrink-0 sm:w-auto">
+                <Upload size={16} /> Upload Document
+              </Button>
+            )}
+          </div>
+        </Card>
 
         <Card>
           <CardHeader title="Documents" subtitle={`${docs.length} document(s)`} />
@@ -140,11 +144,11 @@ function DocumentsPageContent() {
             ) : (
               <ul className="divide-y divide-gray-100">
                 {docs.map((doc: Document) => (
-                  <li key={doc.id} className="flex items-center justify-between px-6 py-4 hover:bg-gray-50 transition-colors">
-                    <div className="flex items-center gap-3">
+                  <li key={doc.id} className="flex flex-col gap-3 px-4 py-4 transition-colors hover:bg-gray-50 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+                    <div className="flex min-w-0 items-start gap-3 sm:items-center">
                       <span className="text-2xl">{getFileIcon(doc.fileType)}</span>
-                      <div>
-                        <p className="font-medium text-gray-900">{doc.name}</p>
+                      <div className="min-w-0">
+                        <p className="truncate font-medium text-gray-900">{doc.name}</p>
                         <p className="text-xs text-gray-400">
                           {formatFileSize(doc.fileSizeBytes)} · Uploaded {formatDate(doc.uploadedAt)}
                         </p>
@@ -155,7 +159,7 @@ function DocumentsPageContent() {
                         </Badge>
                       )}
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center justify-end gap-2 sm:shrink-0">
                       <a
                         href={doc.fileUrl}
                         target="_blank"

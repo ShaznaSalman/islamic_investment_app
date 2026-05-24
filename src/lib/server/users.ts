@@ -39,6 +39,10 @@ export async function createUser(actor: AuthUser, body: Record<string, unknown>)
 
   const existing = await prisma.user.findUnique({ where: { email: email.toLowerCase() } });
   if (existing) throw new ApiError(409, 'Email already in use');
+  if (role === 'OWNER') {
+    const ownerCount = await prisma.user.count({ where: { role: 'OWNER' } });
+    if (ownerCount > 0) throw new ApiError(400, 'This system is configured for a single owner');
+  }
 
   const hashed = await bcrypt.hash(password, 12);
   const user = await prisma.user.create({
@@ -57,6 +61,10 @@ export async function createUser(actor: AuthUser, body: Record<string, unknown>)
 
 export async function updateUser(id: string, body: Record<string, unknown>) {
   const { name, phone, isActive, role } = body;
+  if (role === 'OWNER') {
+    const existingOwner = await prisma.user.findFirst({ where: { role: 'OWNER', id: { not: id } } });
+    if (existingOwner) throw new ApiError(400, 'This system is configured for a single owner');
+  }
   return prisma.user.update({
     where: { id },
     data: {

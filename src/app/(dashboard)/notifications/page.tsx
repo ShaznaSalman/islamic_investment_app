@@ -33,13 +33,13 @@ export default function NotificationsPage() {
         title="Notifications"
         breadcrumb={[{ label: 'Dashboard', href: '/dashboard' }, { label: 'Notifications' }]}
       />
-      <div className="px-6 py-6 space-y-4">
-        <div className="flex items-center justify-between">
+      <div className="space-y-4 px-4 py-4 sm:px-6 sm:py-6">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-sm text-gray-500">
             {unreadCount > 0 ? `${unreadCount} unread notification${unreadCount > 1 ? 's' : ''}` : 'All caught up'}
           </p>
           {unreadCount > 0 && (
-            <Button variant="outline" size="sm" onClick={() => markAll.mutate()}>
+            <Button variant="outline" size="sm" onClick={() => markAll.mutate()} className="w-full sm:w-auto">
               <Check size={14} /> Mark all as read
             </Button>
           )}
@@ -60,13 +60,13 @@ export default function NotificationsPage() {
                 {notifications.map((n) => (
                   <li
                     key={n.id}
-                    className={`flex items-start gap-4 px-6 py-4 transition-colors ${!n.isRead ? 'bg-primary-50' : 'hover:bg-gray-50'}`}
+                    className={`flex items-start gap-3 px-4 py-4 transition-colors sm:gap-4 sm:px-6 ${!n.isRead ? 'bg-primary-50' : 'hover:bg-gray-50'}`}
                   >
                     <span className="text-xl mt-0.5">{typeIcons[n.type]}</span>
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between gap-2">
+                      <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                         <p className="text-sm font-medium text-gray-900">{n.title}</p>
-                        <div className="flex items-center gap-2 shrink-0">
+                        <div className="flex flex-wrap items-center gap-2 sm:shrink-0">
                           {!n.isRead && <Badge variant="primary">New</Badge>}
                           <span className="text-xs text-gray-400">{formatDate(n.createdAt, true)}</span>
                         </div>

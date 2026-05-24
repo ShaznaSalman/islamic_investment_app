@@ -46,22 +46,22 @@ export default function PurificationTracker() {
         subtitle={`${data?.summary.count ?? 0} donations recorded · ${formatOMR(data?.summary.totalPurified ?? 0)} total purified`}
       />
       <CardBody className="space-y-6">
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+        <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
           <Input label="Amount Donated" type="number" step="0.001" leftAddon="OMR" value={amount} onChange={(e) => setAmount(e.target.value)} />
           <Input label="Donation Date" type="date" value={donationDate} onChange={(e) => setDonationDate(e.target.value)} />
           <Input label="Donated To (charity)" value={donatedTo} onChange={(e) => setDonatedTo(e.target.value)} placeholder="Charity name" />
-          <Input label="Purpose" value={purpose} onChange={(e) => setPurpose(e.target.value)} placeholder="e.g. Non-halal income purification" className="md:col-span-2" />
+          <Input label="Purpose" value={purpose} onChange={(e) => setPurpose(e.target.value)} placeholder="e.g. Non-halal income purification" className="sm:col-span-2" />
           <Input label="Notes" value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Optional notes" />
         </div>
-        <Button onClick={saveRecord} loading={createMutation.isPending}>Save Donation Record</Button>
+        <Button onClick={saveRecord} loading={createMutation.isPending} className="w-full sm:w-auto">Save Donation Record</Button>
 
         {isLoading ? (
           <div className="h-24 animate-pulse bg-gray-100 rounded-xl" />
         ) : !data?.records.length ? (
           <p className="text-sm text-gray-400 text-center py-4">No purification records yet.</p>
         ) : (
-          <div className="border border-gray-100 rounded-xl overflow-hidden">
-            <table className="min-w-full data-table">
+          <div className="overflow-x-auto rounded-xl border border-gray-100">
+            <table className="min-w-[42rem] data-table sm:min-w-full">
               <thead>
                 <tr>
                   <th>Date</th>

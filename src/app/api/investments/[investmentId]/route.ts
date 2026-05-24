@@ -6,13 +6,13 @@ import {
 } from '@/lib/server/investments';
 import { handleApiError, requireAuth, requireOwner } from '@/lib/server/auth';
 
-type Params = { params: Promise<{ id: string }> };
+type Params = { params: Promise<{ investmentId: string }> };
 
 export async function GET(req: NextRequest, { params }: Params) {
   try {
     const user = requireAuth(req);
-    const { id } = await params;
-    const data = await getInvestment(user, id);
+    const { investmentId } = await params;
+    const data = await getInvestment(user, investmentId);
     return NextResponse.json(data);
   } catch (error) {
     return handleApiError(error);
@@ -23,9 +23,9 @@ export async function PUT(req: NextRequest, { params }: Params) {
   try {
     const user = requireAuth(req);
     requireOwner(user);
-    const { id } = await params;
+    const { investmentId } = await params;
     const body = await req.json();
-    const data = await updateInvestment(user, id, body);
+    const data = await updateInvestment(user, investmentId, body);
     return NextResponse.json(data);
   } catch (error) {
     return handleApiError(error);
@@ -36,8 +36,8 @@ export async function DELETE(req: NextRequest, { params }: Params) {
   try {
     const user = requireAuth(req);
     requireOwner(user);
-    const { id } = await params;
-    const data = await deleteInvestment(user, id);
+    const { investmentId } = await params;
+    const data = await deleteInvestment(user, investmentId);
     return NextResponse.json(data);
   } catch (error) {
     return handleApiError(error);
